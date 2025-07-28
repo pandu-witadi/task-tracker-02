@@ -63,137 +63,151 @@ const loginSchema = {
 };
 
 async function authRoutes(fastify, options) {
-  fastify.route({
-    method: 'POST',
-    url: '/register',
-    preHandler: [validatePasswordConfirmation],
-    schema: {
-      description: 'Register a new user',
-      body: registerSchema,
-      response: {
-        201: {
-          type: 'object',
-          properties: {
-            status: { type: 'string', example: 'success' },
-            token: { type: 'string' },
-            data: {
-              type: 'object',
-              properties: {
-                user: {
-                  type: 'object',
-                  properties: {
-                    _id: { type: 'string' },
-                    name: { type: 'string' },
-                    email: { type: 'string' },
-                    role: { type: 'string', enum: ['user', 'admin'] },
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          type: 'object',
-          properties: {
-            status: { type: 'string', example: 'fail' },
-            message: { type: 'string', example: 'Validation error' },
-            errors: { type: 'object' },
-          },
-        },
-      },
-    },
-    handler: register,
-  });
-
-  fastify.route({
-    method: 'POST',
-    url: '/login',
-    schema: {
-      description: 'Login user',
-      body: loginSchema,
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            status: { type: 'string', example: 'success' },
-            token: { type: 'string' },
-            data: {
-              type: 'object',
-              properties: {
-                user: {
-                  type: 'object',
-                  properties: {
-                    _id: { type: 'string' },
-                    name: { type: 'string' },
-                    email: { type: 'string' },
-                    role: { type: 'string', enum: ['user', 'admin'] },
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          type: 'object',
-          properties: {
-            status: { type: 'string', example: 'fail' },
-            message: { type: 'string', example: 'Invalid email or password' },
-          },
-        },
-        401: {
-          type: 'object',
-          properties: {
-            status: { type: 'string', example: 'error' },
-            message: { type: 'string', example: 'Please provide email and password' },
-          },
-        },
-      },
-    },
-    handler: login,
-  });
-
-  // Protected route example
-  fastify.get(
-    '/me',
-    {
-      preHandler: [protect],
-      schema: {
-        tags: ['auth'],
-        description: 'Get current user profile',
-        security: [{ bearerAuth: [] }],
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              status: { type: 'string', example: 'success' },
-              data: {
-                type: 'object',
-                properties: {
-                  user: {
+    // Add schemas to Fastify instance for reference
+    fastify.addSchema({
+        $id: 'userSchema',
+        ...registerSchema
+    });
+    
+    fastify.addSchema({
+        $id: 'loginSchema',
+        ...loginSchema
+    });
+    // Register route
+    fastify.route({
+        method: 'POST',
+        url: '/register',
+        preValidation: [validatePasswordConfirmation],
+        schema: {
+            tags: ['auth'],
+            description: 'Register a new user',
+            body: { $ref: 'userSchema#' },
+            response: {
+                201: {
                     type: 'object',
                     properties: {
-                      _id: { type: 'string' },
-                      name: { type: 'string' },
-                      email: { type: 'string' },
-                      role: { type: 'string', enum: ['user', 'admin'] },
+                        status: { type: 'string', example: 'success' },
+                        token: { type: 'string' },
+                        data: {
+                            type: 'object',
+                            properties: {
+                                user: {
+                                    type: 'object',
+                                    properties: {
+                                        _id: { type: 'string' },
+                                        name: { type: 'string' },
+                                        email: { type: 'string' },
+                                        role: { type: 'string', enum: ['user', 'admin'] },
+                                    },
+                                },
+                            },
+                        },
                     },
-                  },
                 },
-              },
+                400: {
+                    type: 'object',
+                    properties: {
+                        status: { type: 'string', example: 'fail' },
+                        message: { type: 'string', example: 'Validation error' },
+                        errors: { type: 'object' },
+                    },
+                },
             },
-          },
         },
-      },
-    },
-    async (request, reply) => {
-      return {
-        status: 'success',
-        data: {
-          user: request.user,
+        handler: register,
+    });
+
+    // Login route
+    fastify.route({
+        method: 'POST',
+        url: '/login',
+        schema: {
+            tags: ['auth'],
+            description: 'Login user',
+            body: { $ref: 'loginSchema#' },
+            response: {
+                200: {
+                    type: 'object',
+                    properties: {
+                        status: { type: 'string', example: 'success' },
+                        token: { type: 'string' },
+                        data: {
+                            type: 'object',
+                            properties: {
+                                user: {
+                                    type: 'object',
+                                    properties: {
+                                        _id: { type: 'string' },
+                                        name: { type: 'string' },
+                                        email: { type: 'string' },
+                                        role: { type: 'string', enum: ['user', 'admin'] },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                400: {
+                    type: 'object',
+                    properties: {
+                        status: { type: 'string', example: 'fail' },
+                        message: { type: 'string', example: 'Invalid email or password' },
+                    },
+                },
+                401: {
+                    type: 'object',
+                    properties: {
+                        status: { type: 'string', example: 'error' },
+                        message: { type: 'string', example: 'Please provide email and password' },
+                    },
+                },
+            },
         },
-      };
-    }
-  );
+        handler: login,
+    });
+
+    // Protected route example - Get current user profile
+    fastify.get(
+        '/me',
+        {
+            preHandler: [protect],
+            schema: {
+                tags: ['auth'],
+                description: 'Get current user profile',
+                security: [{ bearerAuth: [] }],
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            status: { type: 'string', example: 'success' },
+                            data: {
+                                type: 'object',
+                                properties: {
+                                    user: {
+                                        type: 'object',
+                                        properties: {
+                                            _id: { type: 'string' },
+                                            name: { type: 'string' },
+                                            email: { type: 'string' },
+                                            role: { type: 'string', enum: ['user', 'admin'] },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        async (request, reply) => {
+            return {
+                status: 'success',
+                data: {
+                    user: request.user,
+                },
+            };
+        }
+    );
 }
 
 module.exports = authRoutes;

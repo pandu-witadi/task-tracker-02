@@ -50,15 +50,15 @@ task-tracker/
 
 ### Phase 1: Project Setup (Day 1)
 - [x] Initialize backend project with Fastify
-- [ ] Set up frontend with Vite + React + TypeScript
-- [ ] Configure ESLint, Prettier, and Husky
-- [ ] Set up MongoDB with Docker
+- [x] Set up frontend with Vite + React + TypeScript
+- [x] Configure ESLint, Prettier, and Husky
+- [x] Set up MongoDB with Docker
 - [ ] Create basic CI/CD pipeline
 
 ### Phase 2: Backend Development (Days 2-3)
-- [ ] Set up database connection with Mongoose
-- [ ] Create Task model
-- [ ] Implement CRUD endpoints for tasks
+- [x] Set up database connection with Mongoose
+- [x] Create Task model
+- [x] Implement CRUD endpoints for tasks
 - [ ] Add request validation
 - [ ] Set up error handling middleware
 - [ ] Implement JWT authentication

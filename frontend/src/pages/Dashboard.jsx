@@ -4,29 +4,30 @@ import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { authAPI } from '../services/api';
 import { Navbar } from '../components/Navbar';
-import { Loader2, LogOut } from 'lucide-react';
+import { Loader2, LogOut, ListTodo, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        setError(error.message || 'Failed to load user data');
-        console.error('Error loading user:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    useEffect(() => {
+        const loadUser = async () => {
+            try {
+                const userData = await authAPI.getCurrentUser();
+                setUser(userData);
+            } catch (error) {
+                setError(error.message || 'Failed to load user data');
+                console.error('Error loading user:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    loadUser();
+        loadUser();
   }, []);
 
   const handleLogout = async () => {
@@ -100,11 +101,60 @@ export function Dashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-medium">Your Email</h3>
-                  <p className="text-sm text-gray-600 mt-1">{user?.email || 'Not available'}</p>
-                </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Welcome, {user.name}!</CardTitle>
+                    <CardDescription>You're logged in to your dashboard.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">Email: {user.email}</p>
+                    <Button variant="outline" onClick={handleLogout} disabled={isLoggingOut}>
+                      {isLoggingOut ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Logging out...
+                        </>
+                      ) : (
+                        <>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Logout
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <Link to="/tasks">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-lg">Tasks</CardTitle>
+                      <ListTodo className="h-6 w-6 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">Manage Tasks</div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        View, create, and manage your tasks
+                      </p>
+                    </CardContent>
+                  </Link>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <Link to="/tasks/new">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-lg">New Task</CardTitle>
+                      <Plus className="h-6 w-6 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">Create Task</div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Add a new task to your list
+                      </p>
+                    </CardContent>
+                  </Link>
+                </Card>
+
                 <div className="p-4 border rounded-lg bg-gray-50">
                   <h3 className="font-medium">Account Status</h3>
                   <p className="text-sm text-gray-600 mt-1">Active</p>
